@@ -6,8 +6,8 @@ This is currently experimental and partially working.
 
 Architecture:
 - Rocketpool "stack" in docker swarm or k8s. This repo has been tested on docker swarm; k8s would require some adjustments, though likely nothing too drastic. One copy of each service runs; on a HA deployment with multiple managers and workers, ideally across multiple AZs, the failure of one node just means those rocketpool services get "spun up" on another node.
-- Two or more execution clients - Geth or others that the node operator trusts. TLS-encrypted is great, I am using eth-docker for that.
-- Two or more consensus clients - tested with Lighthouse and Teku, should work with Nimbus. TLS-encrypted is great, I am using eth-docker for that. Prysm would require changes because it doesn't do https://.
+- Two or more execution clients - Geth or others that the node operator trusts. TLS-encrypted is assumed by haproxy in this example, I am using eth-docker for that.
+- Two or more consensus clients - tested with Lighthouse and Teku, should work with Nimbus. TLS-encrypted is assumed by haproxy in this example, I am using eth-docker for that. Prysm would require changes because it doesn't do https://.
 - Shared storage is a must. NFS works; or any other shared-storage idea for k8s.
 
 Files in this repo.
@@ -36,7 +36,7 @@ Preparing the shared storage
 - Have an NFS mount, create dir rocketpool
 - Follow steps at https://docs.rocketpool.net/guides/node/native.html#setting-up-the-binaries to grab config.yml and restart-validator.sh and create a settings.yml
 - Only a couple changes needed in the config.yml, for the provider. We'll be using haproxy. The exact host names can be changed of course.
-  - smartnode: validatorRestartCommd: becomes /.rocketpool/restart-validator.sh 
+  - smartnode: validatorRestartCommand: becomes /.rocketpool/restart-validator.sh 
   - eth1: provider: becomes https://goerli-lb.yourdomain.net
   - eth1: wsProvider: becomes wss://goerliws-lb.yourdomain.net
   - eth2: provider: becomes https://prater-lb.yourdomain.net
