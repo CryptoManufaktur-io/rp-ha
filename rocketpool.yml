@@ -1,0 +1,133 @@
+version: "3.4"
+
+services:
+  node:
+    image: rocketpool/smartnode:v1.0.0-rc5
+    entrypoint: ["/bin/sh", "-c"]
+    environment:
+      - ENV=/root/.profile
+    command:
+      - |
+        apk update
+        apk add docker-cli
+        wget https://github.com/rocket-pool/smartnode-install/releases/latest/download/rocketpool-cli-linux-amd64 -O /usr/local/bin/rpool
+        chmod +x /usr/local/bin/rpool 
+        echo 'alias rp="rpool -d /go/bin/rocketpool -c /.rocketpool --allow-root"' >/root/.profile
+        mkdir -p /.rocketpool/data
+        exec /go/bin/rocketpool node
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - rocketpool-data:/.rocketpool
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: ["node.role == manager"]
+      resources:
+        reservations:
+          memory: 50M
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: rocketpool
+        awslogs-stream: node
+
+  watchtower:
+    image: rocketpool/smartnode:v1.0.0-rc5
+    command: watchtower
+    volumes:
+      - rocketpool-data:/.rocketpool
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: ["node.role == worker"]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: rocketpool
+        awslogs-stream: watchtower
+
+  validator:
+    image: sigp/lighthouse:latest
+    volumes:
+      - rocketpool-data:/.rocketpool
+    entrypoint:
+      - lighthouse
+      - vc
+      - --datadir
+      - /.rocketpool/data/validators/lighthouse
+      - --init-slashing-protection
+      - --beacon-nodes
+      - https://prater-lb.example.com
+      - --graffiti
+      - "RP Lighthouse"
+      - --network
+      - prater
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: ["node.role == worker"]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: rocketpool
+        awslogs-stream: validator
+    
+  haproxy:
+    image: haproxy:latest
+    user: root
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apt-get update
+        apt-get install -y curl jq bc ca-certificates
+        haproxy -f /usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      default:
+        aliases:
+          - goerliws-lb.example.com
+          - goerli-lb.example.com
+          - prater-lb.example.com
+    configs:
+      - source: prater-haproxy.cfg
+        target: /usr/local/etc/haproxy/haproxy.cfg
+      - source: check-ecsync.sh
+        target: /var/lib/haproxy/check-ecsync.sh
+        mode: 0555
+      - source: check-ccsync.sh
+        target: /var/lib/haproxy/check-ccsync.sh
+        mode: 0555
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: ["node.role == worker"]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: rocketpool
+        awslogs-stream: haproxy
+
+configs:
+  prater-haproxy.cfg:
+    external: true
+  check-ecsync.sh:
+    external: true
+  check-ccsync.sh:
+    external: true
+  rp-servicelist.txt:
+    external: true
+
+volumes:
+  rocketpool-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=MYADDR.efs.us-east-2.amazonaws.com,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport"
+      device: "MYADDR.efs.us-east-2.amazonaws.com:/rocketpool"
