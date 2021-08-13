@@ -121,8 +121,6 @@ configs:
     external: true
   check-ccsync.sh:
     external: true
-  rp-servicelist.txt:
-    external: true
 
 volumes:
   rocketpool-data:
