@@ -41,7 +41,7 @@ Preparing the shared storage
   - eth1: wsProvider: becomes wss://goerliws-lb.yourdomain.net
   - eth2: provider: becomes https://prater-lb.yourdomain.net
 - settings.yml cannot be empty. Create it with values from another rocketpool install, or be sure to run `rp service config` from inside the `node` container before running `rp node register`.
-- restart-validator.sh gains this line at the very end, as its only executable line: `docker service update --force rocketpool_validator`
+- restart-validator.sh needs to start `#!/bin/sh` and gains this line at the very end, as its only executable line: `docker service update --force rocketpool_validator`
 
 Interacting with the node
 
