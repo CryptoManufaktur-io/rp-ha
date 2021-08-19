@@ -1,13 +1,14 @@
 # rp-ha
+
 Highly available Rocketpool deployment
 =======
 
-This is currently experimental and partially working.
+This is currently experimental, and tested successfully.
 
 Architecture:
 - Rocketpool "stack" in docker swarm or k8s. This repo has been tested on docker swarm; k8s would require some adjustments, though likely nothing too drastic. One copy of each service runs; on a HA deployment with multiple managers and workers, ideally across multiple AZs, the failure of one node just means those rocketpool services get "spun up" on another node.
 - Two or more execution clients - Geth or others that the node operator trusts. TLS-encrypted is assumed by haproxy in this example, I am using eth-docker for that.
-- Two or more consensus clients - tested with Lighthouse and Teku, should work with Nimbus. TLS-encrypted is assumed by haproxy in this example, I am using eth-docker for that. Prysm would require changes because it doesn't do https://.
+- Two or more consensus clients - tested with Lighthouse and Teku, haven't tried with Nimbus. TLS-encrypted is assumed by haproxy in this example, I am using eth-docker for that. Prysm would require changes because it doesn't do https://.
 - Shared storage is a must. NFS works; or any other shared-storage idea for k8s.
 
 Files in this repo.
@@ -50,7 +51,6 @@ can be used to init a wallet, register a node, stake RPL, deposit minipools etc.
 
 Currently not working
 
-- The node does not call the custom script to restart the validator client, and a manual restart of the container is required
-- The lighthouse validator client does not work well with a Teku consensus client while the validator is not yet activated.
+- The lighthouse validator client does not work well with a Teku consensus client while the validator is not yet activated. This is for Teku to fix, they need to return 404 instead of 400.
 
 MIT Licensed

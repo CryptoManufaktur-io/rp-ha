@@ -11,6 +11,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
+        rm /.dockerenv
         apk update
         apk add docker-cli
         wget https://github.com/rocket-pool/smartnode-install/releases/latest/download/rocketpool-cli-linux-amd64 -O /usr/local/bin/rpool
