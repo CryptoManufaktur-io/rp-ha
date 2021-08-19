@@ -40,18 +40,17 @@ Preparing the shared storage
   - eth1: provider: becomes https://goerli-lb.yourdomain.net
   - eth1: wsProvider: becomes wss://goerliws-lb.yourdomain.net
   - eth2: provider: becomes https://prater-lb.yourdomain.net
-- settings.yml cannot be empty. Create it with values from another rocketpool install, or be sure to run `rp service config` from inside the `node` container before running `rp node register`.
+- settings.yml cannot be empty. Create it with values from another rocketpool install, or be sure to run `rp service config` from inside the `node` container before running `rp node register`. Make sure to choose lighthouse for eth2, if using lighthouse and teku, and custom for eth1 can't hurt either.
 - restart-validator.sh needs to start `#!/bin/sh` and gains this line at the very end, as its only executable line: `docker service update --force rocketpool_validator`
 
 Interacting with the node
 
 Open a `sh` on the container that the `rocketpool_node` service runs in. This has to be on a manager node in docker swarm because of that restart-validator.sh above. The rocketpool command is `rp` and
-can be used to init a wallet, register a node, stake RPL, deposit minipools etc. Not working will be `rp logs` and anything that stops, starts or terminates services.
+can be used to init a wallet, register a node, stake RPL, deposit minipools etc. Not available will be any `rp service` commands. 
 
 Currently not working
 
-- `rp minipool status` - this should get fixed in RC6
-- restart-validator.sh hasn't been tested, gated by `rp minipool` commands working
-
+- The node does not call the custom script to restart the validator client, and a manual restart of the container is required
+- The lighthouse validator client does not work well with a Teku consensus client while the validator is not yet activated.
 
 MIT Licensed
