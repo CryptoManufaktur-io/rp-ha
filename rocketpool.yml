@@ -12,13 +12,14 @@ services:
     command:
       - |
         rm /.dockerenv
+        mv /go/bin/rocketpool /go/bin/rocketpoold
         apk update
         apk add docker-cli
-        wget https://github.com/rocket-pool/smartnode-install/releases/latest/download/rocketpool-cli-linux-amd64 -O /usr/local/bin/rpool
-        chmod +x /usr/local/bin/rpool 
-        echo 'alias rp="rpool -d /go/bin/rocketpool -c /.rocketpool --allow-root"' >/root/.profile
+        wget https://github.com/rocket-pool/smartnode-install/releases/latest/download/rocketpool-cli-linux-amd64 -O /usr/local/bin/rocketpool
+        chmod +x /usr/local/bin/rocketpool 
+        echo 'alias rp="rocketpool -d /go/bin/rocketpoold -c /.rocketpool --allow-root"' >/root/.profile
         mkdir -p /.rocketpool/data
-        exec /go/bin/rocketpool node
+        exec /go/bin/rocketpoold node
     deploy:
       mode: replicated
       replicas: 1
