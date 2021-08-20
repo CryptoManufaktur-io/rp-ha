@@ -40,9 +40,10 @@ Preparing the shared storage
   - smartnode: validatorRestartCommand: becomes /.rocketpool/restart-validator.sh 
   - eth1: provider: becomes https://goerli-lb.yourdomain.net
   - eth1: wsProvider: becomes wss://goerliws-lb.yourdomain.net
+  - eth1: mainnetProvider: becomes https://goerli-lb.yourdomain.net
   - eth2: provider: becomes https://prater-lb.yourdomain.net
 - settings.yml cannot be empty. Create it with values from another rocketpool install, or be sure to run `rp service config` from inside the `node` container before running `rp node register`. Make sure to choose lighthouse for eth2, if using lighthouse and teku, and custom for eth1 can't hurt either.
-- restart-validator.sh needs to start `#!/bin/sh` and gains this line at the very end, as its only executable line: `docker service update --force rocketpool_validator`
+- restart-validator.sh needs to start `#!/bin/sh` and gains this line at the very end, as its only executable line: `docker service update --force rocketpool_validator`, assuming the stack is named `rocketpool`
 
 Interacting with the node
 
