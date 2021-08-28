@@ -50,8 +50,4 @@ Interacting with the node
 Open a `sh` on the container that the `rocketpool_node` service runs in. This has to be on a manager node in docker swarm because of that restart-validator.sh above. The rocketpool command is `rp` and
 can be used to init a wallet, register a node, stake RPL, deposit minipools etc. Not available will be any `rp service` commands. 
 
-Currently not working
-
-- The lighthouse validator client does not work well with a Teku consensus client while the validator is not yet activated. This is for Teku to fix, they need to return 404 instead of 400.
-
 MIT Licensed
