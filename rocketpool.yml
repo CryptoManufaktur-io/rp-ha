@@ -63,7 +63,7 @@ services:
       - /.rocketpool/data/validators/lighthouse
       - --init-slashing-protection
       - --beacon-nodes
-      - https://prater-lb.example.com
+      - https://prater-cc-a.example.com,https://prater-cc-b.example.com
       - --graffiti
       - "RP Lighthouse"
       - --network
