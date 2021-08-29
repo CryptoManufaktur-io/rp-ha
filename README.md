@@ -15,7 +15,7 @@ Files in this repo.
 
 - rocketpool.yml - the actual "stack", this would go into portainer or be deployed some other way. Things to adjust here:
   - The domain names for the haproxy load balancer in its service, under `aliases`. These have to match the ACLs in the haproxy.cfg file.
-  - The domain name to be used for beacon node connection by the validator in its service, under `entrypoint` and then the line after `--beacon-nodes`
+  - The domain names to be used for beacon node connections by the validator in its service, under `entrypoint` and then the line after `--beacon-nodes`. This is comma-separated.
   - Logging. I've kept the awslogs stuff in as an example, adjust to where you want the logs
   - NFS mount. I've kept an AWS example in, adjust to where your shared storage is
 
@@ -27,6 +27,7 @@ The following files would live as "configs" in docker swarm or k8s and get refer
     So if your server is available as `goerli-ec-a.example.com` for HTTPS and `goerli-ecws-a.example.com` for WSS, then the two lines for it would respectively read
     `server goerli-ec-a.example.com goerli-ec-a.example.com:443 check` for HTTPS and `server goerli-ec-a.example.com goerli-ecws-a.example.com:443 check` for WSS. The first part is the server name,
     which is arbitrary as far as haproxy is concerned, and the check script uses that to make some RPC calls; the second part is the server address, the location that haproxy will send actual traffic to.
+  - Load-balancing the consensus clients (beacons) did not work well in testing. You'll want one primary and the rest as backup servers. Alternatively, source LB (sticky LB) could be used.
 
 - check-ccsync.sh - external check script for haproxy that verifies that the consensus client is synced and has at least N peers
 
