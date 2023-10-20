@@ -1,8 +1,8 @@
-version: "3.4"
+version: "3.9"
 
 services:
   node:
-    image: rocketpool/smartnode:v1.1.0
+    image: rocketpool/smartnode:v1.11.0
     environment:
       - ENV=/root/.profile
     volumes:
@@ -28,15 +28,9 @@ services:
       resources:
         reservations:
           memory: 50M
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-2
-        awslogs-group: rocketpool
-        awslogs-stream: node
 
   watchtower:
-    image: rocketpool/smartnode:v1.1.0
+    image: rocketpool/smartnode:v1.11.0
     command: watchtower
     volumes:
       - rocketpool-data:/.rocketpool
@@ -45,12 +39,6 @@ services:
       replicas: 1
       placement:
         constraints: ["node.role == worker"]
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-2
-        awslogs-group: rocketpool
-        awslogs-stream: watchtower
 
   validator:
     image: sigp/lighthouse:latest
@@ -63,7 +51,7 @@ services:
       - /.rocketpool/data/validators/lighthouse
       - --init-slashing-protection
       - --beacon-nodes
-      - https://prater-cc-a.example.com,https://prater-cc-b.example.com
+      - https://goerlicl-a.example.com,https://goerlicl-b.example.com
       - --graffiti
       - "RP Lighthouse"
       - --network
@@ -73,12 +61,6 @@ services:
       replicas: 1
       placement:
         constraints: ["node.role == worker"]
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-2
-        awslogs-group: rocketpool
-        awslogs-stream: validator
     
   haproxy:
     image: haproxy:latest
@@ -87,16 +69,16 @@ services:
     command:
       - |
         apt-get update
-        apt-get install -y curl jq bc ca-certificates
+        DEBIAN_FRONTEND=noninteractive apt-get install -y curl jq bc ca-certificates
         haproxy -f /usr/local/etc/haproxy/haproxy.cfg
     networks:
       default:
         aliases:
           - goerliws-lb.example.com
           - goerli-lb.example.com
-          - prater-lb.example.com
+          - goerlicl-lb.example.com
     configs:
-      - source: prater-haproxy.cfg
+      - source: goerli-haproxy.cfg
         target: /usr/local/etc/haproxy/haproxy.cfg
       - source: check-ecsync.sh
         target: /var/lib/haproxy/check-ecsync.sh
@@ -106,18 +88,18 @@ services:
         mode: 0555
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
       placement:
         constraints: ["node.role == worker"]
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: us-east-2
-        awslogs-group: rocketpool
-        awslogs-stream: haproxy
+    healthcheck:
+      test: curl -sS http://localhost:8405/metrics || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
 
 configs:
-  prater-haproxy.cfg:
+  goerli-haproxy.cfg:
     external: true
   check-ecsync.sh:
     external: true
