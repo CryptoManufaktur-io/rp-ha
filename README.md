@@ -1,5 +1,11 @@
 # rp-ha
 
+**This repo has been archived**
+
+RocketPool has its own failover option, there is no need to place a haproxy in between, any longer
+
+# Original readme
+
 Highly available Rocketpool deployment
 =======
 
